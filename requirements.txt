@@ -1,0 +1,5 @@
+Beautifulsoup4
+pysocks
+streamlit
+pandas
+

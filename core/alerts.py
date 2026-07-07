@@ -1,57 +1,117 @@
 import json
-from rules import classify_level
+from datetime import datetime
+
 
 ALERT_THRESHOLD = 20
 
 
 def load_results():
+
     try:
         with open("data/results.json", "r") as f:
             return json.load(f)
-    except:
+
+    except Exception:
         return []
 
 
-def check_alerts(data):
+
+def generate_alerts(results):
+
     alerts = []
 
-    for item in data:
+
+    for item in results:
 
         score = item.get("score", 0)
-        level = item.get("level", "LOW")
 
-        if score >= ALERT_THRESHOLD or level == "CRITICAL":
-            alerts.append({
-                "url": item.get("url"),
-                "score": score,
-                "level": level,
-                "entities": item.get("entities", []),
-                "signals": item.get("signals", [])
-            })
+        level = item.get(
+            "level",
+            "LOW"
+        )
+
+
+        if score >= ALERT_THRESHOLD:
+
+
+            alert = {
+
+                "timestamp":
+                    datetime.now().strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    ),
+
+                "url":
+                    item.get(
+                        "url"
+                    ),
+
+                "severity":
+                    level,
+
+                "score":
+                    score,
+
+                "entities":
+                    item.get(
+                        "entities",
+                        []
+                    ),
+
+                "signals":
+                    item.get(
+                        "signals",
+                        []
+                    )
+            }
+
+
+            alerts.append(alert)
+
 
     return alerts
 
 
+
+def save_alerts(alerts):
+
+    with open(
+        "data/alerts.json",
+        "w"
+    ) as f:
+
+        json.dump(
+            alerts,
+            f,
+            indent=4
+        )
+
+
+
 def main():
-    data = load_results()
 
-    alerts = check_alerts(data)
+    results = load_results()
 
-    print("\n🚨 CTI ALERT SYSTEM")
 
-    if not alerts:
-        print("[-] No threats detected")
-        return
+    alerts = generate_alerts(
+        results
+    )
 
-    print(f"[!] {len(alerts)} ALERT(S) DETECTED\n")
 
-    for a in alerts:
-        print("URL:", a["url"])
-        print("Score:", a["score"])
-        print("Level:", a["level"])
-        print("Entities:", a["entities"])
-        print("Signals:", a["signals"])
-        print("-" * 50)
+    save_alerts(
+        alerts
+    )
+
+
+    print(
+        "[+] Alert system finished"
+    )
+
+
+    print(
+        f"[+] Alerts detected : {len(alerts)}"
+    )
+
 
 
 if __name__ == "__main__":

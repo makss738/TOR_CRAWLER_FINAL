@@ -1,0 +1,18 @@
+version: "3.8"
+
+
+services:
+
+  dashboard:
+
+    build: .
+
+    container_name: cti-dashboard
+
+    ports:
+      - "8501:8501"
+
+    volumes:
+      - ./data:/app/data
+
+    restart: always

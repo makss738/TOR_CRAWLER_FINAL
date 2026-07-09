@@ -1,5 +1,5 @@
-Beautifulsoup4
-pysocks
+requests[socks]
+beautifulsoup4
+PySocks
 streamlit
 pandas
-

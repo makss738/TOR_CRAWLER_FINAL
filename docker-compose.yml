@@ -1,13 +1,12 @@
-version: "3.8"
-
+version: "3.9"
 
 services:
 
-  dashboard:
+  tor-cti:
 
     build: .
 
-    container_name: cti-dashboard
+    container_name: tor-cti
 
     ports:
       - "8501:8501"
@@ -15,4 +14,4 @@ services:
     volumes:
       - ./data:/app/data
 
-    restart: always
+    restart: unless-stopped

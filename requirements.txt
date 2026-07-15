@@ -3,3 +3,6 @@ beautifulsoup4
 PySocks
 streamlit
 pandas
+llama-index
+llama-index-llms-openai
+chromadb

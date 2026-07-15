@@ -1,6 +1,6 @@
-import json
 import hashlib
-from datetime import datetime
+import json
+import os
 
 
 HASH_FILE = "data/hashes.json"
@@ -9,9 +9,14 @@ HASH_FILE = "data/hashes.json"
 
 def load_hashes():
 
+    if not os.path.exists(HASH_FILE):
+
+        return {}
+
     try:
 
         with open(HASH_FILE, "r") as f:
+
             return json.load(f)
 
     except:
@@ -32,104 +37,61 @@ def save_hashes(data):
 
 
 
-def generate_hash(content):
+def calculate_hash(content):
 
     """
-    Génération SHA256
+    Génère un hash SHA256 du contenu HTML
     """
 
     return hashlib.sha256(
-        content.encode("utf-8")
+
+        content.encode(
+            "utf-8",
+            errors="ignore"
+        )
+
     ).hexdigest()
 
 
 
-def check_page(url, content):
-
+def check_change(url, content):
 
     hashes = load_hashes()
 
 
-    new_hash = generate_hash(
+    new_hash = calculate_hash(
         content
     )
 
 
-    result = {
-
-        "url": url,
-
-        "hash": new_hash,
-
-        "timestamp":
-            datetime.now().strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-
-    }
+    old_hash = hashes.get(
+        url
+    )
 
 
-    # Première fois
+    changed = False
 
-    if url not in hashes:
 
-        hashes[url] = result
+    if old_hash:
 
-        save_hashes(
-            hashes
-        )
+        if old_hash != new_hash:
 
-        return {
-            "changed": False,
-            "new": True
-        }
+            changed = True
 
 
 
-    old_hash = hashes[url]["hash"]
+    hashes[url] = new_hash
 
 
-
-    # comparaison
-
-    if old_hash != new_hash:
-
-
-        hashes[url] = result
-
-        save_hashes(
-            hashes
-        )
-
-
-        return {
-
-            "changed": True,
-
-            "old_hash": old_hash,
-
-            "new_hash": new_hash
-
-        }
-
+    save_hashes(
+        hashes
+    )
 
 
     return {
 
-        "changed": False,
+        "hash": new_hash,
 
-        "new": False
+        "changed": changed
 
     }
-
-
-
-if __name__ == "__main__":
-
-    test = check_page(
-        "http://example.onion",
-        "test page"
-    )
-
-
-    print(test)

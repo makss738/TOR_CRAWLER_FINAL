@@ -3,10 +3,15 @@ import pandas as pd
 import streamlit as st
 
 
+
 st.set_page_config(
+
     page_title="Tor CTI Dashboard",
+
     layout="wide"
+
 )
+
 
 
 st.title(
@@ -14,9 +19,6 @@ st.title(
 )
 
 
-# ==========================
-# Chargement résultats
-# ==========================
 
 try:
 
@@ -25,67 +27,89 @@ try:
         "r"
     ) as f:
 
-        results = json.load(f)
+        results=json.load(f)
 
 
-except Exception:
+except:
 
-    results = []
+    results=[]
 
 
 
 if not results:
 
     st.warning(
-        "Aucune donnée disponible. Lance le crawler."
+        "Aucune donnée disponible"
     )
 
     st.stop()
 
 
 
-df = pd.DataFrame(results)
+df=pd.DataFrame(results)
 
 
 
-# ==========================
+# =====================
 # KPI
-# ==========================
-
-col1,col2,col3 = st.columns(3)
+# =====================
 
 
+c1,c2,c3,c4 = st.columns(4)
 
-with col1:
+
+
+with c1:
 
     st.metric(
-        "Pages crawlées",
+        "Pages",
         len(df)
     )
 
 
 
-with col2:
-
-    total_entities = sum(
-        len(x)
-        for x in df["entities"]
-    )
+with c2:
 
     st.metric(
-        "Entités détectées",
-        total_entities
+
+        "Entités",
+
+        sum(
+            len(x)
+            for x in df["entities"]
+        )
+
     )
 
 
 
-with col3:
+with c3:
 
     st.metric(
+
         "Score total",
+
         int(
             df["score"].sum()
         )
+
+    )
+
+
+
+with c4:
+
+    changed=len(
+        df[
+            df["content_changed"]
+            ==
+            True
+        ]
+    )
+
+    st.metric(
+        "Modifications",
+        changed
     )
 
 
@@ -94,9 +118,9 @@ st.divider()
 
 
 
-# ==========================
-# Résultats
-# ==========================
+# =====================
+# TABLE
+# =====================
 
 
 st.subheader(
@@ -105,42 +129,34 @@ st.subheader(
 
 
 
-min_score = st.slider(
-
-    "Score minimum",
-
-    0,
-
-    100,
-
-    0
-)
-
-
-
-filtered = df[
-    df["score"]
-    >= min_score
-]
-
-
-
 st.dataframe(
 
-    filtered[
+    df[
 
         [
+
             "url",
+
             "status",
+
             "score",
+
+            "level",
+
             "entities",
+
             "signals",
-            "links_found"
+
+            "hash",
+
+            "content_changed"
+
         ]
 
     ],
 
     use_container_width=True
+
 )
 
 
@@ -149,44 +165,37 @@ st.divider()
 
 
 
-# ==========================
-# Alertes
-# ==========================
+# =====================
+# ALERTES
+# =====================
 
 
 st.subheader(
-    "🚨 Alertes CTI"
+    "🚨 Alertes"
 )
 
 
 
-try:
+alerts=df[
 
-    with open(
-        "data/alerts.json",
-        "r"
-    ) as f:
+    df["score"] > 0
 
-        alerts=json.load(f)
-
-
-except Exception:
-
-    alerts=[]
+]
 
 
 
-if not alerts:
+if len(alerts)==0:
+
 
     st.success(
-        "Aucune alerte détectée"
+        "Aucune alerte"
     )
 
 
 else:
 
 
-    for alert in alerts:
+    for _,row in alerts.iterrows():
 
 
         st.error(
@@ -194,31 +203,93 @@ else:
 f"""
 URL :
 
-{alert['url']}
+{row['url']}
 
 
 Niveau :
 
-{alert['severity']}
+{row['level']}
 
 
 Score :
 
-{alert['score']}
+{row['score']}
 
 
 Entités :
 
-{', '.join(alert['entities'])}
+{', '.join(row['entities'])}
 
 
 Signaux :
 
-{', '.join(alert['signals'])}
+{', '.join(row['signals'])}
 
-Date :
-
-{alert['timestamp']}
 """
 
         )
+
+
+
+st.divider()
+
+
+
+# =====================
+# HASH MONITORING
+# =====================
+
+
+st.subheader(
+    "🔄 Surveillance des changements"
+)
+
+
+
+changes=df[
+
+    df["content_changed"]
+
+    ==
+
+    True
+
+]
+
+
+
+if len(changes)==0:
+
+
+    st.success(
+        "Aucune modification détectée"
+    )
+
+
+else:
+
+
+    st.warning(
+
+        f"{len(changes)} pages modifiées"
+
+    )
+
+
+    st.dataframe(
+
+        changes[
+
+            [
+
+                "url",
+
+                "hash"
+
+            ]
+
+        ],
+
+        use_container_width=True
+
+    )

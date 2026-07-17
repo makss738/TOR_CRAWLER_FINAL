@@ -6,3 +6,5 @@ pandas
 llama-index
 llama-index-llms-openai
 chromadb
+stem
+fake-useragent

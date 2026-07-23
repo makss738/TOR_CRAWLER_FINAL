@@ -2,49 +2,45 @@ import json
 
 from scraper import fetch_page, extract_links
 
-from rules import (
-    detect_entities,
-    detect_risk_signals,
-    compute_score,
-    classify_level
+from url_manager import (
+    add_url,
+    get_next_url,
+    mark_visited,
+    can_continue
 )
 
-from hash_checker import check_change
+from hash_checker import check_page
+
+from cti import analyze_text
 
 
 
-MAX_PAGES = 50
-
-
-visited = set()
-
-queue = []
+RESULT_FILE="data/results.json"
 
 
 
-def load_seeds(file="onions.txt"):
+def load_results():
 
-    with open(file,"r") as f:
+    try:
 
-        for line in f:
+        with open(
+            RESULT_FILE
+        ) as f:
 
-            url=line.strip()
+            return json.load(f)
 
-            if url:
+    except:
 
-                queue.append(url)
-
-
-
-def is_valid_url(url):
-
-    return ".onion" in url
+        return []
 
 
 
-def save_json(data, filename):
+def save_results(data):
 
-    with open(filename,"w") as f:
+    with open(
+        RESULT_FILE,
+        "w"
+    ) as f:
 
         json.dump(
             data,
@@ -56,28 +52,28 @@ def save_json(data, filename):
 
 def crawl():
 
-    results=[]
 
-    count=0
-
+    results=load_results()
 
 
-    while queue and count < MAX_PAGES:
+    print(
+        "[+] Starting CTI crawler"
+    )
 
 
-        url = queue.pop(0)
+    while can_continue():
 
 
-
-        if url in visited:
-
-            continue
+        url=get_next_url()
 
 
+        if not url:
 
-        if not is_valid_url(url):
+            print(
+                "[+] Queue empty"
+            )
 
-            continue
+            break
 
 
 
@@ -87,35 +83,21 @@ def crawl():
         )
 
 
-        visited.add(url)
+        page=fetch_page(
+            url
+        )
 
 
-
-        page = fetch_page(url)
-
+        html=page["html"]
 
 
-        if "error" in page:
-
-
-            print(
-                "[-] Error:",
-                page["detail"]
-            )
+        if not html:
 
             continue
 
 
 
-        html = page["html"]
-
-
-
-        # =========================
-        # HASH CHECK
-        # =========================
-
-        hash_result = check_change(
+        hash_info=check_page(
 
             url,
 
@@ -124,105 +106,51 @@ def crawl():
         )
 
 
-
-        # =========================
-        # CTI ANALYSIS
-        # =========================
-
-
-        entities = detect_entities(
+        links=extract_links(
             html
         )
 
 
-        signals = detect_risk_signals(
-            html
-        )
+        for link in links:
 
-
-        score = compute_score(
-
-            entities,
-
-            signals
-
-        )
-
-
-        level = classify_level(
-            score
-        )
+            add_url(
+                link
+            )
 
 
 
-        links = extract_links(
+        cti=analyze_text(
             html
         )
 
 
 
-        result = {
+        result={
 
-
-            "url":
-
-                url,
-
+            "url":url,
 
             "status":
-
                 page["status"],
 
+            "hash":
+                hash_info["hash"],
 
+            "changed":
+                hash_info["changed"],
 
             "entities":
-
-                entities,
-
-
+                cti["entities"],
 
             "signals":
-
-                signals,
-
-
+                cti["signals"],
 
             "score":
-
-                score,
-
-
-
-            "level":
-
-                level,
-
-
-
-            "hash":
-
-                hash_result["hash"],
-
-
-
-            "content_changed":
-
-                hash_result["changed"],
-
-
+                cti["score"],
 
             "links_found":
-
-                len(links),
-
-
-
-            "links":
-
-                links
+                len(links)
 
         }
-
 
 
         results.append(
@@ -230,61 +158,14 @@ def crawl():
         )
 
 
-
-        print(
-            "[CTI] Entities:",
-            entities
+        mark_visited(
+            url
         )
 
 
-        print(
-            "[CTI] Signals:",
-            signals
+        save_results(
+            results
         )
-
-
-        print(
-            "[CTI] Score:",
-            score
-        )
-
-
-        print(
-            "[HASH] Changed:",
-            hash_result["changed"]
-        )
-
-
-
-        for link in links:
-
-
-            if link not in visited:
-
-                queue.append(link)
-
-
-
-        count +=1
-
-
-
-    save_json(
-
-        results,
-
-        "data/results.json"
-
-    )
-
-
-    save_json(
-
-        list(visited),
-
-        "data/visited.json"
-
-    )
 
 
 
@@ -292,12 +173,25 @@ def crawl():
         "[+] Crawl finished"
     )
 
+    print(
+        "[+] Pages:",
+        len(results)
+    )
 
 
 
 if __name__=="__main__":
 
-    load_seeds()
+
+    start=input(
+        "URL de départ : "
+    )
+
+
+    add_url(
+        start
+    )
+
 
     crawl()
 

@@ -3,7 +3,7 @@ import json
 import os
 
 
-HASH_FILE = "data/hashes.json"
+HASH_FILE="data/hashes.json"
 
 
 
@@ -13,21 +13,16 @@ def load_hashes():
 
         return {}
 
-    try:
 
-        with open(HASH_FILE, "r") as f:
+    with open(HASH_FILE,"r") as f:
 
-            return json.load(f)
-
-    except:
-
-        return {}
+        return json.load(f)
 
 
 
 def save_hashes(data):
 
-    with open(HASH_FILE, "w") as f:
+    with open(HASH_FILE,"w") as f:
 
         json.dump(
             data,
@@ -37,11 +32,7 @@ def save_hashes(data):
 
 
 
-def calculate_hash(content):
-
-    """
-    Génère un hash SHA256 du contenu HTML
-    """
+def generate_hash(content):
 
     return hashlib.sha256(
 
@@ -54,12 +45,13 @@ def calculate_hash(content):
 
 
 
-def check_change(url, content):
+def check_page(url,content):
+
 
     hashes = load_hashes()
 
 
-    new_hash = calculate_hash(
+    new_hash = generate_hash(
         content
     )
 
@@ -69,18 +61,18 @@ def check_change(url, content):
     )
 
 
-    changed = False
+    changed=False
 
 
     if old_hash:
 
         if old_hash != new_hash:
 
-            changed = True
+            changed=True
 
 
 
-    hashes[url] = new_hash
+    hashes[url]=new_hash
 
 
     save_hashes(
@@ -90,8 +82,8 @@ def check_change(url, content):
 
     return {
 
-        "hash": new_hash,
+        "hash":new_hash,
 
-        "changed": changed
+        "changed":changed
 
     }

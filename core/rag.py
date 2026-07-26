@@ -1,12 +1,22 @@
 import os
 
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+from llama_index.core import (
+    VectorStoreIndex,
+    SimpleDirectoryReader,
+    Settings
+)
+
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 
 KNOWLEDGE_PATH = "data/knowledge"
 
 
-def load_knowledge():
+INDEX_PATH = "data/vector_index"
+
+
+
+def load_documents():
 
     documents = SimpleDirectoryReader(
         KNOWLEDGE_PATH,
@@ -17,9 +27,21 @@ def load_knowledge():
     return documents
 
 
+
 def create_index():
 
-    documents = load_knowledge()
+    print(
+        "[+] Loading knowledge base..."
+    )
+
+
+    documents = load_documents()
+
+
+    Settings.embed_model = HuggingFaceEmbedding(
+        model_name=
+        "sentence-transformers/all-MiniLM-L6-v2"
+    )
 
 
     index = VectorStoreIndex.from_documents(
@@ -27,12 +49,41 @@ def create_index():
     )
 
 
+    index.storage_context.persist(
+        persist_dir=INDEX_PATH
+    )
+
+
+    print(
+        "[+] Vector database created"
+    )
+
+
+
+def load_index():
+
+    from llama_index.core import StorageContext
+
+
+    storage_context = StorageContext.from_defaults(
+        persist_dir=INDEX_PATH
+    )
+
+
+    index = VectorStoreIndex.from_documents(
+        [],
+        storage_context=storage_context
+    )
+
+
     return index
+
 
 
 def ask_question(question):
 
-    index = create_index()
+
+    index = load_index()
 
 
     engine = index.as_query_engine()
@@ -43,32 +94,40 @@ def ask_question(question):
     )
 
 
-    return response
+    return str(response)
 
 
 
 if __name__ == "__main__":
 
 
-    print(
-        "🧠 CTI RAG Assistant"
-    )
+    if not os.path.exists(
+        INDEX_PATH
+    ):
+
+        create_index()
 
 
-    question = input(
-        "Question : "
-    )
+    while True:
 
 
-    answer = ask_question(
-        question
-    )
+        question=input(
+            "\nQuestion CTI : "
+        )
 
 
-    print("\nRéponse :")
+        if question=="exit":
 
-    print(answer)
-
-
+            break
 
 
+        answer=ask_question(
+            question
+        )
+
+
+        print(
+            "\nRéponse :"
+        )
+
+        print(answer)

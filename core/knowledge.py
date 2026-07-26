@@ -2,117 +2,246 @@ import json
 import os
 from datetime import datetime
 
-RESULTS_FILE = "data/results.json"
-KNOWLEDGE_DIR = "data/knowledge"
+
+RESULT_FILE = "data/results.json"
+
+OUTPUT_DIR = "data/knowledge"
+
 
 
 def load_results():
+
     try:
-        with open(RESULTS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+
+        with open(
+            RESULT_FILE,
+            "r"
+        ) as file:
+
+            return json.load(file)
+
     except Exception:
+
         return []
 
 
-def ensure_directory():
-    os.makedirs(KNOWLEDGE_DIR, exist_ok=True)
+
+def create_folder():
+
+    if not os.path.exists(
+        OUTPUT_DIR
+    ):
+
+        os.makedirs(
+            OUTPUT_DIR
+        )
 
 
-def write_entities(results):
-    path = os.path.join(KNOWLEDGE_DIR, "entities.md")
 
-    entities = {}
+def write_file(
+    filename,
+    content
+):
+
+    path = os.path.join(
+        OUTPUT_DIR,
+        filename
+    )
+
+
+    with open(
+        path,
+        "w",
+        encoding="utf-8"
+    ) as file:
+
+        file.write(
+            content
+        )
+
+
+
+def generate_entities(results):
+
+    md = "# Entités détectées\n\n"
+
 
     for item in results:
-        for entity in item.get("entities", []):
-            entities.setdefault(entity, []).append(item["url"])
-
-    with open(path, "w", encoding="utf-8") as f:
-        f.write("# Entités détectées\n\n")
-
-        if not entities:
-            f.write("Aucune entité détectée.\n")
-            return
-
-        for entity in sorted(entities):
-            f.write(f"## {entity}\n\n")
-            for url in entities[entity]:
-                f.write(f"- {url}\n")
-            f.write("\n")
 
 
-def write_threats(results):
-    path = os.path.join(KNOWLEDGE_DIR, "threats.md")
-
-    with open(path, "w", encoding="utf-8") as f:
-
-        f.write("# Menaces détectées\n\n")
-
-        for item in results:
-
-            if item.get("score", 0) == 0:
-                continue
-
-            f.write(f"## {item['url']}\n\n")
-            f.write(f"Score : **{item['score']}**\n\n")
-
-            signals = item.get("signals", [])
-
-            if signals:
-                f.write("Signaux :\n")
-                for signal in signals:
-                    f.write(f"- {signal}\n")
-
-            f.write("\n---\n\n")
-
-
-def write_urls(results):
-
-    path = os.path.join(KNOWLEDGE_DIR, "urls.md")
-
-    with open(path, "w", encoding="utf-8") as f:
-
-        f.write("# URLs analysées\n\n")
-
-        for item in results:
-
-            f.write(f"- {item['url']}\n")
-
-
-def write_report(results):
-
-    path = os.path.join(KNOWLEDGE_DIR, "reports.md")
-
-    with open(path, "w", encoding="utf-8") as f:
-
-        f.write("# Rapport CTI\n\n")
-
-        f.write(
-            f"Date : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        entities = item.get(
+            "entities",
+            []
         )
 
-        f.write(f"Nombre de pages : {len(results)}\n\n")
 
-        total_alerts = len(
-            [r for r in results if r.get("score", 0) > 0]
+        if entities:
+
+
+            md += "## Source\n"
+
+            md += item.get(
+                "url",
+                ""
+            )
+
+            md += "\n\n"
+
+
+            for entity in entities:
+
+                md += (
+                    "- "
+                    +
+                    entity
+                    +
+                    "\n"
+                )
+
+
+            md += "\n---\n"
+
+
+
+    write_file(
+        "entities.md",
+        md
+    )
+
+
+
+def generate_alerts(results):
+
+
+    md = "# Alertes CTI\n\n"
+
+
+
+    for item in results:
+
+
+        score = item.get(
+            "score",
+            0
         )
 
-        f.write(f"Nombre d'alertes : {total_alerts}\n")
+
+        if score > 0:
+
+
+            md += "## Alerte\n\n"
+
+
+            md += (
+                "URL : "
+                +
+                item.get(
+                    "url",
+                    ""
+                )
+                +
+                "\n\n"
+            )
+
+
+            md += (
+                "Score : "
+                +
+                str(score)
+                +
+                "\n\n"
+            )
+
+
+            md += "Signaux :\n"
+
+
+
+            for signal in item.get(
+                "signals",
+                []
+            ):
+
+                md += (
+                    "- "
+                    +
+                    signal
+                    +
+                    "\n"
+                )
+
+
+            md += "\n---\n"
+
+
+
+    write_file(
+        "alerts.md",
+        md
+    )
+
+
+
+def generate_report(results):
+
+
+    md = "# Rapport CTI\n\n"
+
+
+    md += (
+        "Date : "
+        +
+        str(datetime.now())
+        +
+        "\n\n"
+    )
+
+
+    md += (
+        "Nombre de pages analysées : "
+        +
+        str(len(results))
+        +
+        "\n\n"
+    )
+
+
+    write_file(
+        "reports.md",
+        md
+    )
+
 
 
 def main():
 
-    ensure_directory()
+    create_folder()
+
 
     results = load_results()
 
-    write_entities(results)
-    write_threats(results)
-    write_urls(results)
-    write_report(results)
 
-    print("[+] Knowledge Base générée")
+    generate_entities(
+        results
+    )
+
+
+    generate_alerts(
+        results
+    )
+
+
+    generate_report(
+        results
+    )
+
+
+    print(
+        "[+] Knowledge Base generated"
+    )
+
 
 
 if __name__ == "__main__":
+
     main()

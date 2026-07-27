@@ -1,8 +1,12 @@
-__pycache__/
+__pycache__
 *.pyc
-*.pyo
-*.pyd
+
 .git
 .github
+
 .env
-venv/
+
+data/*.json
+
+.vscode
+.idea

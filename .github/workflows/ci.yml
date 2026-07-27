@@ -1,4 +1,5 @@
-name: Tor CTI CI
+name: CTI Project CI
+
 
 on:
 
@@ -7,75 +8,68 @@ on:
     branches:
       - main
 
+
   pull_request:
 
     branches:
       - main
 
 
+
 jobs:
 
-  build:
+
+  test:
+
 
     runs-on: ubuntu-latest
 
 
+
     steps:
 
-    - name: Checkout repository
 
-      uses: actions/checkout@v4
+      - name:
+          Checkout repository
 
-
-    - name: Setup Python
-
-      uses: actions/setup-python@v5
-
-      with:
-
-        python-version: "3.11"
+        uses:
+          actions/checkout@v4
 
 
-    - name: Install dependencies
 
-      run: |
+      - name:
+          Setup Python
 
-        python -m pip install --upgrade pip
+        uses:
+          actions/setup-python@v5
 
-        pip install -r requirements.txt
+        with:
 
-
-    - name: Verify syntax
-
-      run: |
-
-        python -m py_compile core/*.py
-
-        python -m py_compile dashboard/app.py
+          python-version: "3.11"
 
 
-    - name: Create data directory
 
-      run: |
+      - name:
+          Install dependencies
 
-        mkdir -p data
+        run:
 
-        echo "[]" > data/results.json
-
-        echo "[]" > data/visited.json
-
-        echo "[]" > data/alerts.json
+          pip install -r requirements.txt
 
 
-    - name: Test Tor module
 
-      run: |
+      - name:
+          Python syntax check
 
-        python core/tor_test.py || true
+        run:
+
+          python -m compileall core
 
 
-    - name: Build Docker image
 
-      run: |
+      - name:
+          Run tests
 
-        docker build -t tor-cti .
+        run:
+
+          pytest

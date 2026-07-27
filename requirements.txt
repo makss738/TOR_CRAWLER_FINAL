@@ -9,3 +9,5 @@ chromadb
 stem
 fake-useragent
 sentence-transformers
+pytest
+flake8

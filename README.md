@@ -1,217 +1,121 @@
-# 🕷️ Tor-CTI Monitor
+# TOR_CRAWLER_FINAL
 
 ## Présentation
 
-Tor-CTI Monitor est un projet universitaire réalisé dans le cadre d'un projet DevOps Cybersécurité.
+**TOR_CRAWLER_FINAL** est un outil de collecte et d'analyse automatisée développé dans le cadre d'un projet universitaire en cybersécurité.
 
-L'objectif est de développer une plateforme de **Cyber Threat Intelligence (CTI)** permettant d'automatiser la collecte, l'analyse et la visualisation d'informations provenant de sources web accessibles via Tor ou du web classique, afin de détecter des mentions d'entités surveillées et de centraliser les résultats dans une base de connaissances.
+L'objectif principal est de fournir un environnement permettant de :
 
-Le projet met en œuvre des techniques de :
+* récupérer le contenu de pages web via un scraper Python ;
+* parcourir automatiquement plusieurs pages à partir d'une URL de départ grâce à un crawler ;
+* extraire les liens présents dans les pages analysées ;
+* enregistrer les résultats pour une analyse ultérieure ;
+* détecter des informations liées à des règles CTI (Cyber Threat Intelligence).
 
-- Scraping
-- Crawling
-- Analyse CTI
-- Détection d'entités
-- Dashboard interactif
-- Knowledge Base
-- RAG (Retrieval Augmented Generation)
-- Docker
-- GitHub Actions
+L'outil possède également :
 
----
-
-# Fonctionnalités
-
-## Infrastructure
-
-- Navigation via le proxy Tor (SOCKS5)
-- Test automatique de la connexion Tor
-- Gestion du User-Agent
-- Architecture modulaire
-
-## Collecte
-
-- Scraping de pages HTML
-- Crawling automatique
-- Découverte de nouveaux liens
-- Historique des URLs visitées
-
-## Cyber Threat Intelligence
-
-- Détection d'entités surveillées
-- Détection de mots-clés sensibles
-- Attribution d'un score de risque
-- Génération d'alertes
-
-Exemple d'entités :
-
-- CyberV
-- ESIEE Paris
-- IUT de Villetaneuse
-- Hackuten
-- CatTheFlag
-- Air France
-- OSINT FR
-
-## Intégrité
-
-Chaque page analysée possède un hash SHA256.
-
-Si le contenu évolue :
-
-- le changement est détecté ;
-- la page peut être rescannée.
-
-## Dashboard
-
-Dashboard développé avec Streamlit.
-
-Affichage :
-
-- nombre de pages crawlées
-- score global
-- entités détectées
-- alertes
-- tableau des résultats
-- assistant IA
-
-## Intelligence Artificielle
-
-Le projet génère automatiquement une base de connaissances compatible Obsidian.
-
-Les documents sont ensuite indexés grâce à LlamaIndex afin de permettre des recherches en langage naturel.
-
-Exemples :
-
-> Quelles entités ont été détectées ?
-
-> Résume les dernières alertes.
-
-> Quels sites présentent le risque le plus élevé ?
+* un système de comparaison par hash pour identifier les changements de contenu ;
+* une base de connaissances générée automatiquement ;
+* un dashboard Streamlit de visualisation.
 
 ---
 
-# Architecture
+# Architecture du projet
 
 ```
-Tor-Crawler/
+TOR_CRAWLER_FINAL/
 
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-│
 ├── core/
-│   ├── alerts.py
-│   ├── crawler.py
-│   ├── cti.py
-│   ├── dashboard.py
-│   ├── data_manager.py
-│   ├── hash_checker.py
-│   ├── knowledge.py
-│   ├── rag.py
-│   ├── rules.py
-│   ├── scraper.py
-│   ├── tor_manager.py
-│   ├── tor_test.py
-│   ├── url_manager.py
-│   └── user_agent.py
+│   ├── crawler.py          # Moteur de crawl
+│   ├── scraper.py          # Récupération du contenu des pages
+│   ├── cti.py              # Analyse CTI
+│   ├── rules.py             # Règles de détection
+│   ├── hash_checker.py      # Vérification des changements
+│   ├── url_manager.py       # Gestion des URLs
+│   ├── alerts.py            # Gestion des alertes
+│   ├── knowledge.py         # Génération de la base documentaire
+│   ├── rag.py               # Recherche intelligente
+│   ├── tor_test.py          # Test de connexion Tor
+│   └── tor_manager.py       # Gestion Tor
 │
 ├── dashboard/
-│   └── app.py
+│   └── app.py               # Interface Streamlit
 │
 ├── data/
-│   ├── alerts.json
-│   ├── hashes.json
-│   ├── results.json
-│   ├── visited.json
-│   └── knowledge/
+│   ├── results.json         # Résultats des scans
+│   ├── visited.json         # URLs déjà visitées
+│   ├── hashes.json          # Empreintes des pages
+│   └── alerts.json           # Alertes détectées
 │
+├── onions.txt               # Liste des URLs à analyser
+├── requirements.txt         # Dépendances Python
 ├── Dockerfile
 ├── docker-compose.yml
-├── onions.txt
-├── requirements.txt
 └── README.md
 ```
 
 ---
 
-# Architecture logicielle
+# Prérequis
 
+* Linux recommandé (Ubuntu/Debian)
+* Python 3.10+
+* Tor installé
+* Git
+
+Vérifier Python :
+
+```bash
+python3 --version
 ```
-           +---------------------+
-           |      Tor Proxy      |
-           +----------+----------+
-                      |
-                      |
-               scraper.py
-                      |
-                      |
-               crawler.py
-                      |
-                      |
-            Analyse CTI (Regex)
-                      |
-                      |
-             Détection d'entités
-                      |
-                      |
-             Calcul du score
-                      |
-                      |
-            Sauvegarde JSON
-                      |
-          +-----------+-----------+
-          |                       |
-          |                       |
-Knowledge Base            Dashboard
-    Obsidian              Streamlit
-          |                       |
-          +-----------+-----------+
-                      |
-                 RAG LlamaIndex
+
+Vérifier Tor :
+
+```bash
+tor --version
 ```
 
 ---
 
 # Installation
 
-## 1. Cloner le dépôt
+## 1. Cloner le projet
 
 ```bash
-git clone https://github.com/<utilisateur>/Tor-Crawler.git
+git clone <URL_DU_DEPOT>
+```
 
-cd Tor-Crawler
+Entrer dans le dossier :
+
+```bash
+cd TOR_CRAWLER_FINAL
 ```
 
 ---
 
-## 2. Installer Tor
+## 2. Créer l'environnement virtuel Python
 
-Ubuntu
+Créer le venv :
 
 ```bash
-sudo apt update
+python3 -m venv venv
+```
 
-sudo apt install tor
+Activer :
+
+```bash
+source venv/bin/activate
+```
+
+Le terminal doit afficher :
+
+```
+(venv)
 ```
 
 ---
 
-## 3. Démarrer Tor
-
-```bash
-sudo systemctl start tor
-```
-
-Vérification
-
-```bash
-python3 core/tor_test.py
-```
-
----
-
-## 4. Installer les dépendances
+## 3. Installer les dépendances
 
 ```bash
 pip install -r requirements.txt
@@ -219,45 +123,206 @@ pip install -r requirements.txt
 
 ---
 
-## 5. Lancer le crawler
+# Utilisation de l'outil
+
+## 1. Vérifier la connexion Tor
+
+Avant tout lancement, tester Tor :
 
 ```bash
-python3 core/crawler.py
+python core/tor_test.py
+```
+
+Résultat attendu :
+
+```
+[+] Testing Tor IP...
+
+xxx.xxx.xxx.xxx
+```
+
+Si une adresse IP apparaît, Tor fonctionne correctement.
+
+---
+
+# 2. Tester le scraper
+
+Le scraper permet de récupérer le contenu HTML d'une page.
+
+Lancer :
+
+```bash
+python core/scraper.py
+```
+
+Entrer une URL :
+
+Exemple :
+
+```
+https://www.wikipedia.org
+```
+
+Le programme affiche :
+
+* le code HTTP ;
+* un aperçu du contenu HTML.
+
+---
+
+# 3. Lancer le crawler
+
+Le crawler permet de parcourir automatiquement les pages découvertes.
+
+Lancer :
+
+```bash
+python core/crawler.py
+```
+
+Entrer l'URL de départ :
+
+Exemple :
+
+```
+https://www.wikipedia.org
+```
+
+Le crawler va :
+
+1. récupérer la page ;
+2. analyser son contenu ;
+3. extraire les liens présents ;
+4. ajouter les nouvelles URLs ;
+5. enregistrer les résultats.
+
+---
+
+# Résultats générés
+
+Après un crawl, les résultats sont enregistrés dans :
+
+## results.json
+
+Contient les informations principales :
+
+```json
+{
+"url": "https://example.com",
+"status":200,
+"score":0,
+"entities":[],
+"links_found":20
+}
 ```
 
 ---
 
-## 6. Générer la base de connaissances
+## visited.json
 
-```bash
-python3 core/knowledge.py
-```
+Liste des pages déjà analysées.
+
+Permet d'éviter de traiter plusieurs fois la même URL.
 
 ---
 
-## 7. Lancer le dashboard
+## hashes.json
+
+Contient l'empreinte des pages.
+
+Le système compare les hashes afin d'identifier si une page a été modifiée entre deux analyses.
+
+---
+
+## alerts.json
+
+Stocke les alertes CTI générées.
+
+---
+
+# Analyse CTI
+
+Après collecte, l'outil analyse les contenus récupérés.
+
+Fonctionnalités :
+
+* recherche d'entités surveillées ;
+* application de règles ;
+* calcul d'un score ;
+* génération d'alertes.
+
+---
+
+# Génération de la base de connaissances
+
+Pour générer les fichiers documentaires :
+
+```bash
+python core/knowledge.py
+```
+
+Les fichiers sont générés dans :
+
+```
+data/knowledge/
+```
+
+Ils peuvent être ouverts avec Obsidian.
+
+---
+
+# Lancement du dashboard
+
+Installer Streamlit si nécessaire :
+
+```bash
+pip install streamlit
+```
+
+Lancer :
 
 ```bash
 streamlit run dashboard/app.py
 ```
 
-Le tableau de bord est accessible sur :
+Accès :
 
 ```
 http://localhost:8501
 ```
 
+Le dashboard affiche :
+
+* nombre de pages analysées ;
+* résultats CTI ;
+* alertes ;
+* scores ;
+* données collectées.
+
 ---
 
-# Docker
+# Réinitialiser une analyse
 
-Construction
+Pour recommencer un scan propre :
+
+```bash
+echo "[]" > data/results.json
+echo "[]" > data/visited.json
+echo "{}" > data/hashes.json
+echo "[]" > data/alerts.json
+```
+
+---
+
+# Utilisation avec Docker
+
+Construction :
 
 ```bash
 docker compose build
 ```
 
-Exécution
+Lancement :
 
 ```bash
 docker compose up
@@ -265,126 +330,75 @@ docker compose up
 
 ---
 
-# GitHub Actions
+# Dépannage
 
-Le pipeline CI vérifie automatiquement :
-
-- installation des dépendances
-- compilation Python
-- tests unitaires
-
-Le workflow est situé dans :
+## Erreur :
 
 ```
-.github/workflows/ci.yml
+externally-managed-environment
 ```
 
----
+Solution :
 
-# Données générées
+Utiliser un environnement virtuel :
 
-## results.json
-
-Contient les résultats complets du crawler.
-
-Exemple
-
-```json
-{
-    "url": "https://example.com",
-    "status": 200,
-    "score": 30,
-    "entities": [
-        "Air France"
-    ]
-}
+```bash
+python3 -m venv venv
+source venv/bin/activate
 ```
 
 ---
 
-## alerts.json
+## Erreur :
 
-Liste des alertes détectées.
+```
+Permission denied venv/bin/pip
+```
 
----
+Le venv a probablement été créé avec sudo.
 
-## hashes.json
+Supprimer :
 
-Hash SHA256 de chaque page analysée.
+```bash
+rm -rf venv
+```
 
----
+Puis recréer sans sudo :
 
-## visited.json
-
-Historique des URLs visitées.
-
----
-
-# Dashboard
-
-Le dashboard affiche :
-
-- Nombre de pages analysées
-- Entités détectées
-- Score global
-- Alertes
-- Tableau détaillé
-- Assistant IA
+```bash
+python3 -m venv venv
+```
 
 ---
 
-# Technologies utilisées
+## Tor ne répond pas
 
-## Langages
+Vérifier le service :
 
-- Python 3
+```bash
+sudo systemctl status tor
+```
 
-## Scraping
+Démarrer :
 
-- Requests
-- BeautifulSoup
-
-## Dashboard
-
-- Streamlit
-
-## Data
-
-- JSON
-
-## IA
-
-- LlamaIndex
-
-## Documentation
-
-- Obsidian
-
-## DevOps
-
-- Docker
-- Docker Compose
-- GitHub Actions
+```bash
+sudo systemctl start tor
+```
 
 ---
 
-# Perspectives
+# Commandes principales
 
-Le projet peut être amélioré avec :
-
-- Base PostgreSQL
-- Elasticsearch
-- RabbitMQ
-- API REST
-- Authentification
-- Déploiement Kubernetes
-- Détection par modèles NLP
-- Supervision Prometheus/Grafana
+| Action                 | Commande                         |
+| ---------------------- | -------------------------------- |
+| Tester Tor             | `python core/tor_test.py`        |
+| Tester scraper         | `python core/scraper.py`         |
+| Lancer crawler         | `python core/crawler.py`         |
+| Générer Knowledge Base | `python core/knowledge.py`       |
+| Dashboard              | `streamlit run dashboard/app.py` |
 
 ---
 
-# Auteur
+# Licence
 
-Projet réalisé dans le cadre d'un projet universitaire DevOps Cybersécurité.
-
-Année universitaire : 2025-2026.
+Projet réalisé dans un cadre universitaire.
